@@ -481,7 +481,7 @@ export default function CharacterBrowser() {
           <Card className="border border-default-100/60">
             <CardBody className="flex items-center justify-center py-4">
               <Pagination
-                key={page}
+                key={page + "-" + pages}
                 page={page}
                 total={Math.max(pages, 1)}
                 onChange={setPage}
