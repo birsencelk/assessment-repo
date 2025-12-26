@@ -166,7 +166,6 @@ export default function CharacterBrowser() {
     variables: { page: Math.max(1, page), filter },
     notifyOnNetworkStatusChange: true,
   });
-  console.log({ page });
 
   const characters = data?.characters?.results ?? [];
   const pages = data?.characters?.info.pages ?? 0;
@@ -399,7 +398,7 @@ export default function CharacterBrowser() {
               : characters.map((c) => (
                   <div
                     key={c.id}
-                    className="w-full border border-default-100/60 rounded-2xl "
+                    className="w-full border border-default-100/60 rounded-2xl bg-content2 dark:bg-content1"
                     // isPressable
                     // isHoverable
                     // isFooterBlurred
@@ -445,7 +444,7 @@ export default function CharacterBrowser() {
                     </div>
                     <Divider className="my-1" />
 
-                    <div className="flex p-4 justify-between bg-background/60 backdrop-blur-md">
+                    <div className="flex p-4 justify-between">
                       <div className="text-xs text-foreground-500">
                         <span className="font-medium text-foreground-700">
                           Origin:
@@ -482,6 +481,7 @@ export default function CharacterBrowser() {
           <Card className="border border-default-100/60">
             <CardBody className="flex items-center justify-center py-4">
               <Pagination
+                key={page}
                 page={page}
                 total={Math.max(pages, 1)}
                 onChange={setPage}
