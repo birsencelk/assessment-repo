@@ -3,6 +3,7 @@
 import * as React from "react";
 import { gql } from "@apollo/client/core";
 import { useQuery } from "@apollo/client/react";
+
 import {
   Alert,
   Button,
@@ -49,7 +50,12 @@ type Character = {
 
 type CharactersQueryData = {
   characters: {
-    info: { count: number; pages: number; next: number | null; prev: number | null };
+    info: {
+      count: number;
+      pages: number;
+      next: number | null;
+      prev: number | null;
+    };
     results: Character[];
   } | null;
 };
@@ -91,7 +97,9 @@ const GET_CHARACTERS = gql`
   }
 `;
 
-function statusChipColor(status: CharacterStatus): "success" | "danger" | "default" {
+function statusChipColor(
+  status: CharacterStatus
+): "success" | "danger" | "default" {
   if (status === "Alive") return "success";
   if (status === "Dead") return "danger";
   return "default";
@@ -119,9 +127,17 @@ export default function CharacterBrowser() {
   const debouncedName = useDebouncedValue(name, 350);
   const debouncedSpecies = useDebouncedValue(species, 350);
 
+  const [isClient, setIsClient] = React.useState(false);
+
   React.useEffect(() => {
-    const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
-    const nextIsDark = document.documentElement.classList.contains("dark") || prefersDark;
+    setIsClient(true);
+  }, []);
+
+  React.useEffect(() => {
+    const prefersDark =
+      window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
+    const nextIsDark =
+      document.documentElement.classList.contains("dark") || prefersDark;
     setIsDark(nextIsDark);
     if (nextIsDark) document.documentElement.classList.add("dark");
   }, []);
@@ -143,10 +159,14 @@ export default function CharacterBrowser() {
     return Object.keys(f).length ? f : undefined;
   }, [debouncedName, status, gender, debouncedSpecies]);
 
-  const { data, loading, error } = useQuery<CharactersQueryData, CharactersQueryVars>(GET_CHARACTERS, {
-    variables: { page: Math.max(1, page - 1), filter },
+  const { data, loading, error } = useQuery<
+    CharactersQueryData,
+    CharactersQueryVars
+  >(GET_CHARACTERS, {
+    variables: { page: Math.max(1, page), filter },
     notifyOnNetworkStatusChange: true,
   });
+  console.log({ page });
 
   const characters = data?.characters?.results ?? [];
   const pages = data?.characters?.info.pages ?? 0;
@@ -160,7 +180,7 @@ export default function CharacterBrowser() {
       setSelected(c);
       onOpen();
     },
-    [onOpen],
+    [onOpen]
   );
 
   const clearFilters = React.useCallback(() => {
@@ -171,14 +191,24 @@ export default function CharacterBrowser() {
     setPage(1);
   }, []);
 
+  if (!isClient) {
+    return null;
+  }
+
   return (
     <div className="min-h-dvh bg-background text-foreground">
-      <Navbar maxWidth="xl" position="sticky" className="border-b border-default-100/60">
+      <Navbar
+        maxWidth="xl"
+        position="sticky"
+        className="border-b border-default-100/60"
+      >
         <NavbarBrand className="gap-2">
           <div className="h-8 w-8 rounded-xl bg-linear-to-br from-primary to-secondary" />
           <div className="flex flex-col leading-tight">
             <span className="text-sm font-semibold">Rick & Morty</span>
-            <span className="text-xs text-foreground-500">Character Browser</span>
+            <span className="text-xs text-foreground-500">
+              Character Browser
+            </span>
           </div>
         </NavbarBrand>
         <NavbarContent justify="end">
@@ -205,7 +235,9 @@ export default function CharacterBrowser() {
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div className="flex flex-col gap-1">
-                  <div className="text-2xl font-semibold tracking-tight">Browse characters</div>
+                  <div className="text-2xl font-semibold tracking-tight">
+                    Browse characters
+                  </div>
                   <div className="text-sm text-foreground-500">
                     Search and filter across the Rick &amp; Morty universe.
                   </div>
@@ -228,10 +260,16 @@ export default function CharacterBrowser() {
             <CardHeader className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-col">
                 <div className="text-sm font-semibold">Filters</div>
-                <div className="text-xs text-foreground-500">Tip: typing is debounced for smoother searching.</div>
+                <div className="text-xs text-foreground-500">
+                  Tip: typing is debounced for smoother searching.
+                </div>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="flat" onPress={clearFilters} isDisabled={!name && !status && !gender && !species}>
+                <Button
+                  variant="flat"
+                  onPress={clearFilters}
+                  isDisabled={!name && !status && !gender && !species}
+                >
                   Clear
                 </Button>
                 <Button
@@ -268,7 +306,9 @@ export default function CharacterBrowser() {
                   label="Status"
                   selectedKeys={status ? [status] : []}
                   onSelectionChange={(keys) => {
-                    const first = Array.from(keys)[0] as CharacterStatus | undefined;
+                    const first = Array.from(keys)[0] as
+                      | CharacterStatus
+                      | undefined;
                     setStatus(first ?? "");
                   }}
                   className="md:w-56"
@@ -282,14 +322,18 @@ export default function CharacterBrowser() {
                   label="Gender"
                   selectedKeys={gender ? [gender] : []}
                   onSelectionChange={(keys) => {
-                    const first = Array.from(keys)[0] as CharacterGender | undefined;
+                    const first = Array.from(keys)[0] as
+                      | CharacterGender
+                      | undefined;
                     setGender(first ?? "");
                   }}
                   className="md:w-56"
                 >
-                  {(["Female", "Male", "Genderless", "unknown"] as const).map((g) => (
-                    <SelectItem key={g}>{g}</SelectItem>
-                  ))}
+                  {(["Female", "Male", "Genderless", "unknown"] as const).map(
+                    (g) => (
+                      <SelectItem key={g}>{g}</SelectItem>
+                    )
+                  )}
                 </Select>
               </div>
             </CardBody>
@@ -300,18 +344,26 @@ export default function CharacterBrowser() {
                   "Loading…"
                 ) : (
                   <>
-                    Showing <span className="text-foreground font-medium">{characters.length}</span>{" "}
+                    Showing{" "}
+                    <span className="text-foreground font-medium">
+                      {characters.length}
+                    </span>{" "}
                     {characters.length === 1 ? "character" : "characters"}
                     {data?.characters?.info.count != null ? (
                       <>
                         {" "}
-                        of <span className="text-foreground font-medium">{data.characters.info.count}</span>
+                        of{" "}
+                        <span className="text-foreground font-medium">
+                          {data.characters.info.count}
+                        </span>
                       </>
                     ) : null}
                   </>
                 )}
               </div>
-              <div className="text-xs text-foreground-400">Powered by Rick &amp; Morty API</div>
+              <div className="text-xs text-foreground-400">
+                Powered by Rick &amp; Morty API
+              </div>
             </CardFooter>
           </Card>
 
@@ -321,7 +373,7 @@ export default function CharacterBrowser() {
             </Alert>
           ) : null}
 
-          <div className="flex flex-wrap gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {loading
               ? Array.from({ length: 9 }).map((_, i) => (
                   <Card
@@ -345,26 +397,34 @@ export default function CharacterBrowser() {
                   </Card>
                 ))
               : characters.map((c) => (
-                  <Card
+                  <div
                     key={c.id}
-                    className="w-full border border-default-100/60"
-                    isPressable
-                    isHoverable
-                    isFooterBlurred
-                    onPress={() => openDetails(c)}
+                    className="w-full border border-default-100/60 rounded-2xl "
+                    // isPressable
+                    // isHoverable
+                    // isFooterBlurred
+                    onClick={() => openDetails(c)}
                   >
-                    <CardHeader className="flex items-start justify-between gap-3">
+                    <div className="flex items-start justify-between gap-3 p-4">
                       <div className="min-w-0">
-                        <div className="truncate text-base font-semibold">{c.name}</div>
+                        <div className="truncate text-base font-semibold">
+                          {c.name}
+                        </div>
                         <div className="text-sm text-foreground-500">
                           {c.species} • {c.gender}
                         </div>
                       </div>
-                      <Chip size="sm" color={statusChipColor(c.status)} variant="flat">
+                      <Chip
+                        size="sm"
+                        color={statusChipColor(c.status)}
+                        variant="flat"
+                      >
                         {c.status}
                       </Chip>
-                    </CardHeader>
-                    <CardBody className="pt-0">
+                    </div>
+                    <Divider className="my-1" />
+
+                    <div className="p-4">
                       <Image
                         alt={c.name}
                         src={c.image}
@@ -374,22 +434,33 @@ export default function CharacterBrowser() {
                       <Spacer y={3} />
                       <div className="text-sm text-foreground-500">
                         <div className="truncate">
-                          <span className="text-foreground-700">Origin:</span> {c.origin?.name ?? "Unknown"}
+                          <span className="text-foreground-700">Origin:</span>{" "}
+                          {c.origin?.name ?? "Unknown"}
                         </div>
                         <div className="truncate">
-                          <span className="text-foreground-700">Location:</span> {c.location?.name ?? "Unknown"}
+                          <span className="text-foreground-700">Location:</span>{" "}
+                          {c.location?.name ?? "Unknown"}
                         </div>
                       </div>
-                    </CardBody>
-                    <CardFooter className="justify-between bg-background/60 backdrop-blur-md">
+                    </div>
+                    <Divider className="my-1" />
+
+                    <div className="flex p-4 justify-between bg-background/60 backdrop-blur-md">
                       <div className="text-xs text-foreground-500">
-                        <span className="font-medium text-foreground-700">Origin:</span> {c.origin?.name ?? "Unknown"}
+                        <span className="font-medium text-foreground-700">
+                          Origin:
+                        </span>{" "}
+                        {c.origin?.name ?? "Unknown"}
                       </div>
-                      <Button size="sm" variant="flat">
+                      <Button
+                        size="sm"
+                        variant="flat"
+                        onPress={() => openDetails(c)}
+                      >
                         Details
                       </Button>
-                    </CardFooter>
-                  </Card>
+                    </div>
+                  </div>
                 ))}
           </div>
 
@@ -426,7 +497,9 @@ export default function CharacterBrowser() {
         <ModalContent>
           {(close) => (
             <>
-              <ModalHeader className="flex flex-col gap-1">{selected?.name ?? "Character"}</ModalHeader>
+              <ModalHeader className="flex flex-col gap-1">
+                {selected?.name ?? "Character"}
+              </ModalHeader>
               <ModalBody>
                 {selected ? (
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-[220px_1fr]">
@@ -437,7 +510,11 @@ export default function CharacterBrowser() {
                     />
                     <div className="flex flex-col gap-2">
                       <div className="flex flex-wrap gap-2">
-                        <Chip size="sm" color={statusChipColor(selected.status)} variant="flat">
+                        <Chip
+                          size="sm"
+                          color={statusChipColor(selected.status)}
+                          variant="flat"
+                        >
                           {selected.status}
                         </Chip>
                         <Chip size="sm" variant="flat">
@@ -450,11 +527,17 @@ export default function CharacterBrowser() {
                       <Divider className="my-1" />
                       <div className="text-sm">
                         <div className="text-foreground-500">Origin</div>
-                        <div className="font-medium">{selected.origin?.name ?? "Unknown"}</div>
+                        <div className="font-medium">
+                          {selected.origin?.name ?? "Unknown"}
+                        </div>
                       </div>
                       <div className="text-sm">
-                        <div className="text-foreground-500">Last known location</div>
-                        <div className="font-medium">{selected.location?.name ?? "Unknown"}</div>
+                        <div className="text-foreground-500">
+                          Last known location
+                        </div>
+                        <div className="font-medium">
+                          {selected.location?.name ?? "Unknown"}
+                        </div>
                       </div>
                       <div className="text-xs text-foreground-500">
                         ID: <span className="font-mono">{selected.id}</span>
@@ -475,5 +558,3 @@ export default function CharacterBrowser() {
     </div>
   );
 }
-
-
